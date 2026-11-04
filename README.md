@@ -13,7 +13,9 @@
 Four NER architectures trained on CoNLL-2003, compared under a strict
 entity-level protocol, served through a polished entity-highlighting app.
 
-**Live demo:** _(added after deployment)_ · **Dataset:** CoNLL-2003 · **Entities:** PER · ORG · LOC · MISC
+**🚀 Live demo:** [huggingface.co/spaces/fariskishtah/entitylens-ai](https://huggingface.co/spaces/fariskishtah/entitylens-ai) ·
+**🤗 Model:** [fariskishtah/entitylens-ai](https://huggingface.co/fariskishtah/entitylens-ai) ·
+**Dataset:** CoNLL-2003
 
 </div>
 
@@ -183,6 +185,25 @@ structure** matters, which is why it is the strongest recurrent model here.
 - **Batch CSV processing** with downloadable JSON (in-memory, nothing persisted).
 - **Model-performance dashboard** with the genuine four-model comparison.
 - Empty-state handling, input-length limits, Unicode safety, responsive layout.
+
+## Deployment
+
+The production BERT model is published to the Hugging Face Hub and served two ways:
+
+- **🤗 Model repo** — [`fariskishtah/entitylens-ai`](https://huggingface.co/fariskishtah/entitylens-ai):
+  the fine-tuned `bert-base-cased` weights, usable directly with
+  `transformers.pipeline("token-classification", "fariskishtah/entitylens-ai")`,
+  plus a quantized ONNX build for the browser.
+- **🚀 Live demo (static Space)** —
+  [`spaces/fariskishtah/entitylens-ai`](https://huggingface.co/spaces/fariskishtah/entitylens-ai):
+  runs the quantized model **entirely in the browser** via
+  [transformers.js](https://github.com/xenova/transformers.js) — no backend, no data leaves the device.
+
+> **Why a static Space?** Hugging Face now requires a paid **PRO** subscription to
+> host Gradio/Docker Spaces on free CPU. Rather than pay, EntityLens ships the same
+> model as a **free** static Space that runs client-side via transformers.js. The
+> full Gradio app (`app.py`) is included in this repo and runs locally with
+> `python app.py`.
 
 ## Screenshots
 

@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>EntityLens AI — Named Entity Recognition</title>
+<style>
+  :root{
+    --navy:#0f172a; --navy2:#1e3a8a; --ink:#0f172a; --muted:#64748b;
+    --line:#e2e8f0; --bg:#f8fafc; --card:#ffffff;
+    --per:#2563eb; --org:#7c3aed; --loc:#059669; --misc:#d97706;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+       background:var(--bg);color:var(--ink);line-height:1.5}
+  .wrap{max-width:980px;margin:0 auto;padding:0 16px 60px}
+  header{background:linear-gradient(135deg,var(--navy),var(--navy2));color:#fff;
+         padding:26px;border-radius:0 0 18px 18px;margin-bottom:18px}
+  header h1{margin:0;font-size:26px;letter-spacing:-.3px}
+  header p{margin:6px 0 0;opacity:.85}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:16px}
+  textarea{width:100%;min-height:120px;border:1px solid var(--line);border-radius:10px;padding:12px;
+           font-size:15px;font-family:inherit;resize:vertical}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  button{background:var(--navy2);color:#fff;border:0;border-radius:9px;padding:10px 18px;font-size:14px;
+         font-weight:600;cursor:pointer}
+  button.ghost{background:#fff;color:var(--navy2);border:1px solid var(--line)}
+  button:disabled{opacity:.5;cursor:not-allowed}
+  .examples{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+  .examples button{background:#eef2ff;color:var(--navy2);font-weight:500;font-size:12.5px;padding:6px 10px}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;margin:4px 0 12px;font-size:13px}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .dot{width:13px;height:13px;border-radius:4px;display:inline-block}
+  .out{line-height:2.1;font-size:15.5px}
+  .ent{border-radius:4px;padding:1px 4px;border-bottom:2.5px solid}
+  .ent sup{font-size:9px;font-weight:800;margin-left:2px}
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  th,td{text-align:left;padding:7px 9px;border-bottom:1px solid var(--line)}
+  th{color:var(--muted);font-weight:600}
+  .pill{font-size:11px;font-weight:700;color:#fff;padding:2px 7px;border-radius:20px}
+  .stats{display:flex;gap:10px;flex-wrap:wrap}
+  .stat{flex:1;min-width:120px;background:#f1f5f9;border-radius:10px;padding:12px}
+  .stat b{font-size:22px;display:block}
+  .stat span{color:var(--muted);font-size:12px}
+  .muted{color:var(--muted)}
+  h2{font-size:17px;margin:2px 0 12px}
+  #status{font-size:13px;color:var(--muted)}
+  .bar{height:6px;background:#e2e8f0;border-radius:4px;overflow:hidden;margin-top:8px}
+  .bar>i{display:block;height:100%;background:var(--navy2);width:0;transition:width .3s}
+  .tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+  .tabs button{background:#fff;color:var(--navy2);border:1px solid var(--line)}
+  .tabs button.active{background:var(--navy2);color:#fff}
+  .hide{display:none}
+  a{color:var(--navy2)}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap" style="padding-bottom:0">
+    <h1>🔎 EntityLens AI</h1>
+    <p>Intelligent Named Entity Recognition &amp; Text Analysis — running in your browser</p>
+  </div>
+</header>
+<div class="wrap">
+
+  <div class="tabs">
+    <button class="active" data-tab="analyze">Analyze</button>
+    <button data-tab="performance">Model performance</button>
+    <button data-tab="about">About</button>
+  </div>
+
+  <div id="tab-analyze">
+    <div class="card">
+      <div id="status">⏳ Loading the fine-tuned BERT model in your browser (~100 MB, first load only)…</div>
+      <div class="bar"><i id="prog"></i></div>
+    </div>
+
+    <div class="card">
+      <textarea id="input" placeholder="Paste English text with people, organizations, locations…"></textarea>
+      <div class="row" style="margin-top:10px">
+        <button id="run" disabled>Analyze</button>
+        <button id="clear" class="ghost">Clear</button>
+        <span id="timing" class="muted"></span>
+      </div>
+      <div class="examples" id="examples"></div>
+    </div>
+
+    <div class="card" id="resultCard" style="display:none">
+      <div class="legend">
+        <span><i class="dot" style="background:var(--per)"></i>Person (PER)</span>
+        <span><i class="dot" style="background:var(--org)"></i>Organization (ORG)</span>
+        <span><i class="dot" style="background:var(--loc)"></i>Location (LOC)</span>
+        <span><i class="dot" style="background:var(--misc)"></i>Misc (MISC)</span>
+      </div>
+      <div class="out" id="highlighted"></div>
+    </div>
+
+    <div class="card" id="statsCard" style="display:none">
+      <div class="stats" id="stats"></div>
+    </div>
+
+    <div class="card" id="tableCard" style="display:none">
+      <h2>Extracted entities</h2>
+      <table><thead><tr><th>Entity</th><th>Type</th><th>Start</th><th>End</th><th>Confidence</th></tr></thead>
+      <tbody id="tbody"></tbody></table>
+      <p class="muted" style="font-size:12px;margin-top:10px">Confidence is the raw model score, not a calibrated probability.</p>
+    </div>
+  </div>
+
+  <div id="tab-performance" class="hide">
+    <div class="card">
+      <h2>Four-model comparison — CoNLL-2003 test set (strict seqeval)</h2>
+      <table><thead><tr><th>Model</th><th>Val F1</th><th>Test F1</th><th>PER</th><th>ORG</th><th>LOC</th><th>MISC</th><th>Latency</th></tr></thead>
+      <tbody>
+        <tr><td>LSTM</td><td>0.851</td><td>0.777</td><td>0.830</td><td>0.690</td><td>0.837</td><td>0.695</td><td>2 ms</td></tr>
+        <tr><td>BiLSTM</td><td>0.903</td><td>0.844</td><td>0.878</td><td>0.799</td><td>0.895</td><td>0.752</td><td>3 ms</td></tr>
+        <tr><td>BiLSTM+CRF</td><td>0.921</td><td>0.866</td><td>0.913</td><td>0.820</td><td>0.906</td><td>0.767</td><td>3 ms</td></tr>
+        <tr style="background:#eef2ff"><td><b>BERT ⭐</b></td><td><b>0.954</b></td><td><b>0.918</b></td><td>0.963</td><td>0.902</td><td>0.931</td><td>0.819</td><td>25 ms</td></tr>
+      </tbody></table>
+      <p class="muted" style="font-size:13px">Production model: <b>BERT (bert-base-cased)</b>, selected on validation F1.
+      The CRF eliminated invalid BIO transitions entirely (0.82%→0.27%→0.00% across LSTM→BiLSTM→BiLSTM+CRF).
+      Full analysis: <a href="https://github.com/fariskishtah/entitylens-ai" target="_blank">GitHub repo</a>.</p>
+    </div>
+  </div>
+
+  <div id="tab-about" class="hide">
+    <div class="card">
+      <h2>About</h2>
+      <p>EntityLens AI recognizes four entity types — Person, Organization, Location and
+      Miscellaneous — with a <b>bert-base-cased</b> model fine-tuned on CoNLL-2003
+      (test F1 0.918). This demo runs the quantized model <b>entirely in your browser</b>
+      via <a href="https://github.com/xenova/transformers.js" target="_blank">transformers.js</a>
+      — no data leaves your device. Highlighting uses exact character offsets from the tokenizer.</p>
+      <p class="muted">Model: <a href="https://huggingface.co/fariskishtah/entitylens-ai" target="_blank">huggingface.co/fariskishtah/entitylens-ai</a>
+      · Code: <a href="https://github.com/fariskishtah/entitylens-ai" target="_blank">github.com/fariskishtah/entitylens-ai</a></p>
+    </div>
+  </div>
+
+</div>
+
+<script type="module">
+import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2';
+env.allowLocalModels = false;
+
+const COLORS = {PER:'#2563eb', ORG:'#7c3aed', LOC:'#059669', MISC:'#d97706'};
+const EXAMPLES = [
+  "Barack Obama was born in Hawaii and later worked in Chicago before becoming President of the United States.",
+  "Apple and Microsoft are competing with Google and Amazon in the artificial intelligence market.",
+  "The European Union and the United Nations met in Geneva to discuss the Middle East.",
+  "Lionel Messi left FC Barcelona to join Paris Saint-Germain, surprising fans across Europe.",
+  "Dr. Angela Merkel, the former German Chancellor, visited the White House in Washington."
+];
+const $ = id => document.getElementById(id);
+const esc = s => s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+// tabs
+document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('.tabs button').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');
+  ['analyze','performance','about'].forEach(t=>$('tab-'+t).classList.toggle('hide', t!==b.dataset.tab));
+});
+// examples
+const exWrap = $('examples');
+EXAMPLES.forEach(t=>{const b=document.createElement('button');b.textContent=t.slice(0,42)+'…';
+  b.onclick=()=>{$('input').value=t;}; exWrap.appendChild(b);});
+
+let ner=null;
+(async()=>{
+  try{
+    ner = await pipeline('token-classification','fariskishtah/entitylens-ai',{
+      quantized:true,
+      progress_callback: p=>{ if(p.progress){ $('prog').style.width = p.progress.toFixed(0)+'%';
+        $('status').textContent = `⏳ Loading model… ${p.file||''} ${p.progress.toFixed(0)}%`; } }
+    });
+    $('status').textContent = '✅ Model ready — enter text and click Analyze.';
+    $('prog').style.width='100%';
+    $('run').disabled=false;
+  }catch(e){ $('status').textContent = '⚠️ Failed to load model: '+e; }
+})();
+
+$('clear').onclick=()=>{$('input').value='';['resultCard','statsCard','tableCard'].forEach(i=>$(i).style.display='none');$('timing').textContent='';};
+
+$('run').onclick=async()=>{
+  const text = $('input').value.trim();
+  if(!text || !ner) return;
+  $('run').disabled=true; $('run').textContent='Analyzing…';
+  const t0=performance.now();
+  let ents=[];
+  try{ ents = await ner(text, {aggregation_strategy:'simple'}); }
+  catch(e){ $('status').textContent='⚠️ Inference error: '+e; $('run').disabled=false; $('run').textContent='Analyze'; return; }
+  const ms=(performance.now()-t0).toFixed(0);
+  ents = ents.map(e=>({text:text.slice(e.start,e.end), type:e.entity_group,
+                       start:e.start, end:e.end, score:e.score}))
+             .filter(e=>COLORS[e.type]).sort((a,b)=>a.start-b.start);
+  // highlight
+  let html='', cur=0;
+  for(const e of ents){ if(e.start<cur) continue;
+    html+=esc(text.slice(cur,e.start));
+    html+=`<span class="ent" style="background:${COLORS[e.type]}1a;border-color:${COLORS[e.type]};color:#0f172a" title="${e.type} ${(e.score*100).toFixed(0)}%">${esc(e.text)}<sup style="color:${COLORS[e.type]}">${e.type}</sup></span>`;
+    cur=e.end;
+  }
+  html+=esc(text.slice(cur));
+  $('highlighted').innerHTML = html.replace(/\n/g,'<br>'); $('resultCard').style.display='block';
+  // stats
+  const by={PER:0,ORG:0,LOC:0,MISC:0}; ents.forEach(e=>by[e.type]++);
+  const uniq=new Set(ents.map(e=>e.text.toLowerCase()+'|'+e.type)).size;
+  $('stats').innerHTML = `<div class="stat"><b>${ents.length}</b><span>Total entities</span></div>
+    <div class="stat"><b>${uniq}</b><span>Unique</span></div>`+
+    Object.entries(by).map(([k,v])=>`<div class="stat"><b style="color:${COLORS[k]}">${v}</b><span>${k}</span></div>`).join('');
+  $('statsCard').style.display='block';
+  // table
+  $('tbody').innerHTML = ents.map(e=>`<tr><td>${esc(e.text)}</td>
+    <td><span class="pill" style="background:${COLORS[e.type]}">${e.type}</span></td>
+    <td>${e.start}</td><td>${e.end}</td><td>${(e.score*100).toFixed(1)}%</td></tr>`).join('')
+    || '<tr><td colspan="5" class="muted">No entities detected.</td></tr>';
+  $('tableCard').style.display='block';
+  $('timing').textContent = `${ents.length} entities · ${ms} ms`;
+  $('run').disabled=false; $('run').textContent='Analyze';
+};
+</script>
+</body>
+</html>
