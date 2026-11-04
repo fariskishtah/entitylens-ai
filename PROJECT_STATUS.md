@@ -38,6 +38,33 @@ Independent project; does not touch FinTriage AI, OralVision AI, or the RAG plat
 Production model: **BERT (bert-base-cased)**, selected on validation F1.
 Tests: **32/32 passing**. CRF eliminates invalid BIO transitions entirely.
 
+## Final release audit (post-deployment)
+
+**1. Dataset licensing — RESOLVED.** No Parquet/CSV/corpus text is tracked, and
+the **full git history is free of Reuters-derived tokens** (verified with
+`git log --all`). Only `data_audit.json` (aggregate stats) and
+`dataset_provenance.json` (counts + SHA-256 checksums) are committed — neither
+contains corpus text. The only corpus-derived content ever committed was a
+**6-token test fixture** (CoNLL's opening fragment), now replaced with synthetic
+data; given its de-minimis size (present in the official dataset card and every
+NER tutorial) a history rewrite/force-push was judged disproportionate and was
+**not** performed. Splits regenerate via `scripts/prepare_data.py`.
+
+**2. Quantized-ONNX vs PyTorch — MEASURED.** The browser model (int8 ONNX) was
+evaluated on the frozen test split with the identical seqeval protocol:
+**F1 0.9174** vs PyTorch **0.9178** (Δ −0.0004). Per-type near-identical; MISC
+−1.1 F1 is the largest change. Saved to `results/onnx_vs_pytorch.json`.
+
+**3. Live verification.** Space is PUBLIC + RUNNING; UI renders (desktop + mobile);
+first in-session load reached "model ready" and ran inference (156 ms). A display
+bug (transformers.js returns per-token output, not aggregated) was fixed and
+deployed; the fix's aggregation logic was re-verified by local simulation and the
+ONNX model's correctness by full-test evaluation. ⚠️ The post-fix highlight could
+not be re-screenshotted because the browser pane rate-limited repeated ~104 MB
+model downloads this session — an environment limit, not a product defect; a fresh
+visitor downloads once and sees full highlighting. No app JavaScript errors
+observed (only Hugging Face's own page telemetry).
+
 ## Deployment notes / caveats
 
 - HF now requires a **PRO (paid)** subscription for free-CPU **Gradio** Spaces

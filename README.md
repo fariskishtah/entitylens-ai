@@ -206,9 +206,32 @@ The production BERT model is published to the Hugging Face Hub and served two wa
 
 > **Why a static Space?** Hugging Face now requires a paid **PRO** subscription to
 > host Gradio/Docker Spaces on free CPU. Rather than pay, EntityLens ships the same
-> model as a **free** static Space that runs client-side via transformers.js. The
-> full Gradio app (`app.py`) is included in this repo and runs locally with
-> `python app.py`.
+> model as a **free** static Space that runs client-side via transformers.js.
+
+### Two ways to run the app (explicit)
+
+| | **Static Space** (deployed, public) | **Gradio app** (`app.py`, local) |
+|---|---|---|
+| Runtime | In the browser (transformers.js + WASM) | Python server on your machine |
+| Model | Int8-**quantized ONNX** (~104 MB, downloaded once to the browser) | Full-precision **PyTorch** `bert-base-cased` |
+| Features | Highlighting, table, stats, performance tab | All of those + entity inspector, batch CSV, export |
+| Hosting | Free HF static Space | `python app.py` (localhost) |
+
+### Quantized-ONNX vs PyTorch consistency (measured, not assumed)
+
+The browser model is a dynamically int8-quantized ONNX export. It was evaluated on
+the **same frozen CoNLL-2003 test split with the identical strict seqeval protocol**:
+
+| | Test F1 | Precision | Recall | PER | ORG | LOC | MISC |
+|---|---|---|---|---|---|---|---|
+| PyTorch `bert-base-cased` | 0.9178 | 0.914 | 0.922 | 0.963 | 0.902 | 0.931 | 0.819 |
+| **Quantized ONNX (browser)** | **0.9174** | 0.914 | 0.921 | 0.965 | 0.903 | 0.933 | 0.808 |
+| Δ (quantization) | **−0.0004** | ≈0 | −0.001 | +0.002 | +0.001 | +0.002 | −0.011 |
+
+Quantization costs **0.04 F1 points** overall; the only notable per-type change is
+**MISC** (−1.1 F1). The browser demo therefore reproduces the production model's
+accuracy almost exactly — the ~0.918 test F1 quoted above is the PyTorch model's;
+the browser model's independently measured value is **0.9174**.
 
 ## Screenshots
 

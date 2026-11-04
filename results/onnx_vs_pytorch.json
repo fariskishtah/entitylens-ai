@@ -1,0 +1,18 @@
+{
+  "pytorch_bert_test_f1": 0.9178,
+  "onnx_quantized_test_f1": 0.9174,
+  "delta_f1": -0.0004,
+  "pytorch_per_type": {
+    "PER": 0.963,
+    "ORG": 0.902,
+    "LOC": 0.931,
+    "MISC": 0.819
+  },
+  "onnx_per_type": {
+    "PER": 0.965,
+    "ORG": 0.903,
+    "LOC": 0.9325,
+    "MISC": 0.8079
+  },
+  "note": "Int8 dynamic-quantized ONNX (browser model) evaluated on the frozen CoNLL-2003 test split with the identical strict seqeval protocol. Accuracy is essentially unchanged by quantization; MISC drops ~1.2 F1, the largest per-type change."
+}
