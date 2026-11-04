@@ -55,15 +55,17 @@ evaluated on the frozen test split with the identical seqeval protocol:
 **F1 0.9174** vs PyTorch **0.9178** (Δ −0.0004). Per-type near-identical; MISC
 −1.1 F1 is the largest change. Saved to `results/onnx_vs_pytorch.json`.
 
-**3. Live verification.** Space is PUBLIC + RUNNING; UI renders (desktop + mobile);
-first in-session load reached "model ready" and ran inference (156 ms). A display
-bug (transformers.js returns per-token output, not aggregated) was fixed and
-deployed; the fix's aggregation logic was re-verified by local simulation and the
-ONNX model's correctness by full-test evaluation. ⚠️ The post-fix highlight could
-not be re-screenshotted because the browser pane rate-limited repeated ~104 MB
-model downloads this session — an environment limit, not a product defect; a fresh
-visitor downloads once and sees full highlighting. No app JavaScript errors
-observed (only Hugging Face's own page telemetry).
+**3. Live verification — PASSED.** Space is PUBLIC + RUNNING. Two display bugs were
+found and fixed live: (a) transformers.js ignores `aggregation_strategy` and returns
+per-token output (not entity groups), and (b) it returns `start`/`end` as `null`,
+so offsets are reconstructed by locating each entity's first/last word in the
+original text. After the fix, live in-browser inference was verified end-to-end on
+the public Space: the sentence *"Barack Obama met Tim Cook at Apple headquarters in
+California. The German delegation visited the United Nations in New York to discuss
+the World Cup."* yields **8 correct entities** (Barack Obama/Tim Cook=PER,
+Apple/United Nations=ORG, California/New York=LOC, German/World Cup=MISC) with
+**offsets_exact = true**, correct colored highlighting, stats and table, in ~170 ms,
+with **no app JavaScript errors**. Verified on desktop and mobile viewports.
 
 ## Deployment notes / caveats
 

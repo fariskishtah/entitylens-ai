@@ -189,31 +189,37 @@ $('run').onclick=async()=>{
   try{ raw = await ner(text); }  // per-token output: {entity, score, word, start, end}
   catch(e){ $('status').textContent='⚠️ Inference error: '+e; $('run').disabled=false; $('run').textContent='Analyze'; return; }
   const ms=(performance.now()-t0).toFixed(0);
-  // Merge subwords + BIO tags into entity spans using character offsets.
-  const spans=[]; let cur=null;
-  const close=()=>{ if(cur){ cur.score=cur.scores.reduce((a,b)=>a+b,0)/cur.scores.length;
-                             spans.push(cur); cur=null; } };
+  // transformers.js returns per-token {entity, word, score} but start/end are null,
+  // so: (1) group tokens into entity spans by BIO + subword (##) merge, then
+  // (2) locate each span's first/last word in the ORIGINAL text to get exact offsets.
+  const groups=[]; let g=null;
+  const flush=()=>{ if(g){ groups.push(g); g=null; } };
   for(const t of raw){
     const lab=t.entity||'O';
     const isSub = typeof t.word==='string' && t.word.startsWith('##');
-    if(lab==='O'){ if(isSub && cur){ cur.end=t.end??cur.end; } else { close(); } continue; }
+    if(lab==='O'){ if(isSub && g){ g.words.push(t.word); g.scores.push(t.score); } else flush(); continue; }
     const pfx=lab[0], typ=lab.slice(2);
-    if(pfx==='B' && !isSub){ close(); cur={type:typ,start:t.start,end:t.end,scores:[t.score]}; }
-    else if(cur && (isSub || cur.type===typ)){ cur.end=t.end??cur.end; cur.scores.push(t.score); }
-    else { close(); cur={type:typ,start:t.start,end:t.end,scores:[t.score]}; }
+    if(pfx==='B' && !isSub){ flush(); g={type:typ,words:[t.word],scores:[t.score]}; }
+    else if(g && (isSub || g.type===typ)){ g.words.push(t.word); g.scores.push(t.score); }
+    else { flush(); g={type:typ,words:[t.word],scores:[t.score]}; }
   }
-  close();
-  const ents = spans.filter(e=>COLORS[e.type] && e.start!=null && e.end!=null)
-    .map(e=>({text:text.slice(e.start,e.end), type:e.type, start:e.start, end:e.end, score:e.score}))
-    .sort((a,b)=>a.start-b.start);
+  flush();
+  const ents=[]; let cursor=0;
+  for(const grp of groups){ if(!COLORS[grp.type]) continue;
+    const first=grp.words[0].replace(/^##/,''); const last=grp.words[grp.words.length-1].replace(/^##/,'');
+    let s=text.indexOf(first,cursor); if(s<0) s=text.indexOf(first); if(s<0) continue;
+    let e=text.indexOf(last,s); e=(e<0? s+first.length : e+last.length); cursor=e;
+    ents.push({text:text.slice(s,e), type:grp.type, start:s, end:e,
+               score: grp.scores.reduce((a,b)=>a+b,0)/grp.scores.length}); }
+  ents.sort((a,b)=>a.start-b.start);
   // highlight
-  let html='', cur=0;
-  for(const e of ents){ if(e.start<cur) continue;
-    html+=esc(text.slice(cur,e.start));
+  let html='', pos=0;
+  for(const e of ents){ if(e.start<pos) continue;
+    html+=esc(text.slice(pos,e.start));
     html+=`<span class="ent" style="background:${COLORS[e.type]}1a;border-color:${COLORS[e.type]};color:#0f172a" title="${e.type} ${(e.score*100).toFixed(0)}%">${esc(e.text)}<sup style="color:${COLORS[e.type]}">${e.type}</sup></span>`;
-    cur=e.end;
+    pos=e.end;
   }
-  html+=esc(text.slice(cur));
+  html+=esc(text.slice(pos));
   $('highlighted').innerHTML = html.replace(/\n/g,'<br>'); $('resultCard').style.display='block';
   // stats
   const by={PER:0,ORG:0,LOC:0,MISC:0}; ents.forEach(e=>by[e.type]++);
