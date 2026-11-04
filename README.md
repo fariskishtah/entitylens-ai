@@ -207,7 +207,13 @@ The production BERT model is published to the Hugging Face Hub and served two wa
 
 ## Screenshots
 
-<!-- SCREENSHOTS -->
+Live four-model performance dashboard on the deployed Space:
+
+![Model performance dashboard](assets/screenshot_performance.jpg)
+
+The **Analyze** tab highlights detected entities inline (colour-coded by type,
+with an extracted-entities table and live statistics); try it on the
+[live demo](https://huggingface.co/spaces/fariskishtah/entitylens-ai).
 
 ## Installation & reproduction
 

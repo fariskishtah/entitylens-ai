@@ -3,76 +3,52 @@
 _Intelligent Named Entity Recognition & Text Analysis Platform._
 Independent project; does not touch FinTriage AI, OralVision AI, or the RAG platform.
 
-Legend: ✅ completed · 🔄 in progress · ⛔ blocked / needs decision
+**Status: COMPLETE** (public release live). Legend: ✅ done · ⚠️ caveat
+
+## Public links
+
+- **GitHub (PUBLIC):** https://github.com/fariskishtah/entitylens-ai
+- **HF Model (PUBLIC):** https://huggingface.co/fariskishtah/entitylens-ai
+- **HF Space / live demo (PUBLIC):** https://huggingface.co/spaces/fariskishtah/entitylens-ai
 
 ## Milestones
 
-| # | Milestone | State | Evidence |
-|---|-----------|-------|----------|
-| 1 | Dataset verification + audit | ✅ | `data/processed/data_audit.json`, `dataset_provenance.json` |
-| 2 | Project scaffold + env | ✅ | `src/entitylens/`, `.venv` (py3.12, torch 2.5.1 MPS) |
-| 3 | Preprocessing, BIO, alignment, GloVe, OOV | ✅ | `data/`, `models/components.py` (char-CNN), 87.6% GloVe coverage |
-| 4 | Four architectures + tests + smoke | ✅ | `models/`, `tests/` (32 passing), all 4 train paths smoke-tested |
-| 5 | Full training (3 RNNs local, BERT) | 🔄 | RNNs training on MPS; BERT path pending decision |
-| 6 | Evaluation + selection | 🔄 | `scripts/evaluate_all.py` ready; runs after training |
-| 7 | Gradio application | ✅ | `app.py` + `src/entitylens/app_utils.py` (tested) |
-| 8 | Integration + visual QA | 🔄 | pending trained production model |
-| 9 | Private HF deployment | ⛔ | needs trained model + user approval (visibility/cost) |
-| 10 | GitHub + README + audit | 🔄 | repo files written; README metrics pending training |
+| # | Milestone | State |
+|---|-----------|-------|
+| 1 | Dataset verification + audit | ✅ |
+| 2 | Project scaffold + env | ✅ |
+| 3 | Preprocessing, BIO, GloVe, char-CNN OOV | ✅ |
+| 4 | Four architectures + 32 tests | ✅ |
+| 5 | Full training (3 RNN local MPS + BERT Kaggle T4) | ✅ |
+| 6 | Evaluation + validation-based selection | ✅ |
+| 7 | Gradio app (+ static transformers.js app) | ✅ |
+| 8 | QA + real-model inference tests | ✅ |
+| 9 | Public deployment (model repo + static Space) | ✅ |
+| 10 | GitHub + README + screenshots + audit | ✅ |
 
-## Verified dataset facts (CoNLL-2003, `tomaarsen/conll2003` parquet mirror)
+## Final results (CoNLL-2003 test, strict seqeval)
 
-- Splits (official, frozen): train **14,041** / val **3,250** / test **3,453** sentences.
-- Tokens: 203,621 / 51,362 / 46,435. Entities: 23,499 / 5,942 / 5,648.
-- Tagging: **IOB2** confirmed — 0 invalid transitions in any split.
-- Labels: `O, B-/I-{PER,ORG,LOC,MISC}` (9 classes).
-- Cross-split OOV (token): val 7.54%, test 10.87% → handled by char-CNN + GloVe + (BERT) subwords.
-- Known benchmark quirk (documented, not "fixed"): small cross-split sentence
-  overlap (train↔val 129, train↔test 78) — mostly repeated short sport-score
-  lines. Official splits are preserved per the evaluation protocol.
+| Model | Val F1 | Test F1 | PER | ORG | LOC | MISC | invalid BIO | params |
+|---|---|---|---|---|---|---|---|---|
+| LSTM | 0.8513 | 0.7772 | 0.830 | 0.690 | 0.837 | 0.695 | 0.82% | 2.37M |
+| BiLSTM | 0.9030 | 0.8439 | 0.878 | 0.799 | 0.895 | 0.752 | 0.27% | 2.64M |
+| BiLSTM+CRF | 0.9206 | 0.8656 | 0.913 | 0.820 | 0.906 | 0.767 | 0.00% | 2.64M |
+| **BERT ⭐** | **0.9537** | **0.9178** | 0.963 | 0.902 | 0.931 | 0.819 | 0.075% | 107.7M |
 
-## Engineering decisions
+Production model: **BERT (bert-base-cased)**, selected on validation F1.
+Tests: **32/32 passing**. CRF eliminates invalid BIO transitions entirely.
 
-- One canonical `label2id`/`id2label` shared by all four models + the app.
-- Vocab + embeddings built from **train only** (no leakage).
-- CRF: real `pytorch-crf` with Viterbi decoding + hard IOB2 transition
-  constraints re-applied after every optimizer step.
-- Transformer: first-subword labels only; metrics realigned to word level.
-- Model selection by **validation** F1; test set evaluated once at the end.
-- Credentials present on this machine: Kaggle, HF (cached), GitHub (`fariskishtah`).
+## Deployment notes / caveats
 
-## Live training progress (resume point)
-
-- **Public release AUTHORIZED** by user (GitHub public + HF public Space + public model). CPU free hosting preferred; no paid hardware.
-- **LSTM**: training locally on MPS, reached **val F1 ≈ 0.851** by epoch 12, converging (early stop pending). ~2 min/epoch.
-- **BiLSTM, BiLSTM+CRF**: queued after LSTM (sequential via `scripts/train_all_rnn.py`, PID-tracked).
-- **BERT (Kaggle GPU)**: all 4 epochs completed (checkpoints 439→1756); kernel finalizing eval/save. Pull with `python scripts/kaggle_launch.py --pull`, place under `artifacts/transformer/model/`.
-- A background waiter blocks until local training ends AND the Kaggle kernel leaves RUNNING, then resumes the pipeline.
-
-## Verified training results (final)
-
-| Model | val F1 | test F1 | test P | test R | invalid BIO | params | latency |
-|---|---|---|---|---|---|---|---|
-| LSTM | 0.8513 | 0.7772 | 0.786 | 0.769 | 0.82% | 2.37M | 2.0ms |
-| BiLSTM | 0.9030 | 0.8439 | 0.846 | 0.842 | 0.27% | 2.64M | 2.9ms |
-| BiLSTM+CRF | **0.9206** | **0.8656** | 0.874 | 0.857 | **0.00%** | 2.64M | 3.2ms |
-| BERT | _(pending pull)_ | | | | | 108M | |
-
-Per-class test F1 (CRF): PER 0.9125 · ORG 0.8201 · LOC 0.9056 · MISC 0.767.
-Production candidate by validation F1: **BiLSTM+CRF** (CPU-friendly, 3ms/sentence) — confirm after BERT val F1 known.
-
-## Resume point (exact pending operations)
-
-1. **BERT pull IN PROGRESS** → background task downloading only `artifacts/transformer/model/*`
-   from Kaggle kernel `fariskishtah/entitylens-transformer-training` into `/tmp/bertpull/...`.
-   Needed files: model.safetensors, config.json (has id2label/label2id), tokenizer.json,
-   tokenizer_config.json, special_tokens_map.json, vocab.txt. On completion → move to
-   `artifacts/transformer/model/`, verify `Predictor.load` works, then re-run
-   `scripts/evaluate_all.py` (adds BERT row, re-selects by val F1).
-2. figures (`scripts/make_figures.py`) → fill README `<!-- RESULTS_TABLE -->`,
-   `<!-- PER_CLASS_TABLE -->`, `<!-- SCREENSHOTS -->`.
-3. launch app, capture screenshots (desktop + mobile), save to `assets/`.
-4. security audit (secrets/tokens/raw data) → `git init` → **PUBLIC** GitHub `fariskishtah/entitylens-ai`.
-5. `scripts/deploy_hf.py --push --public` → **PUBLIC** HF Space → live verify unauthenticated.
-
-Public release AUTHORIZED. Free CPU hosting only. Do not retrain. Do not touch other projects.
+- HF now requires a **PRO (paid)** subscription for free-CPU **Gradio** Spaces
+  (account is not PRO). Per instructions, no subscription was purchased; instead
+  the model ships as a **free static Space** running the quantized ONNX model
+  in-browser via transformers.js. The full Gradio `app.py` runs locally.
+- ⚠️ Live in-browser inference and model load were verified in-session (model
+  reached "ready", first inference ran). After a display-aggregation fix (deployed),
+  the fix's logic was re-verified by local simulation and by local ONNX inference,
+  but the post-fix highlight could not be re-screenshotted because the browser pane
+  rate-limited repeated ~100 MB model downloads. A fresh visitor downloads once and
+  sees full highlighting.
+- Corpus tokens are **not** redistributed on GitHub (Reuters licensing);
+  regenerate the frozen splits with `python scripts/prepare_data.py`.

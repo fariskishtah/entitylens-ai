@@ -185,13 +185,27 @@ $('run').onclick=async()=>{
   if(!text || !ner) return;
   $('run').disabled=true; $('run').textContent='Analyzing…';
   const t0=performance.now();
-  let ents=[];
-  try{ ents = await ner(text, {aggregation_strategy:'simple'}); }
+  let raw=[];
+  try{ raw = await ner(text); }  // per-token output: {entity, score, word, start, end}
   catch(e){ $('status').textContent='⚠️ Inference error: '+e; $('run').disabled=false; $('run').textContent='Analyze'; return; }
   const ms=(performance.now()-t0).toFixed(0);
-  ents = ents.map(e=>({text:text.slice(e.start,e.end), type:e.entity_group,
-                       start:e.start, end:e.end, score:e.score}))
-             .filter(e=>COLORS[e.type]).sort((a,b)=>a.start-b.start);
+  // Merge subwords + BIO tags into entity spans using character offsets.
+  const spans=[]; let cur=null;
+  const close=()=>{ if(cur){ cur.score=cur.scores.reduce((a,b)=>a+b,0)/cur.scores.length;
+                             spans.push(cur); cur=null; } };
+  for(const t of raw){
+    const lab=t.entity||'O';
+    const isSub = typeof t.word==='string' && t.word.startsWith('##');
+    if(lab==='O'){ if(isSub && cur){ cur.end=t.end??cur.end; } else { close(); } continue; }
+    const pfx=lab[0], typ=lab.slice(2);
+    if(pfx==='B' && !isSub){ close(); cur={type:typ,start:t.start,end:t.end,scores:[t.score]}; }
+    else if(cur && (isSub || cur.type===typ)){ cur.end=t.end??cur.end; cur.scores.push(t.score); }
+    else { close(); cur={type:typ,start:t.start,end:t.end,scores:[t.score]}; }
+  }
+  close();
+  const ents = spans.filter(e=>COLORS[e.type] && e.start!=null && e.end!=null)
+    .map(e=>({text:text.slice(e.start,e.end), type:e.type, start:e.start, end:e.end, score:e.score}))
+    .sort((a,b)=>a.start-b.start);
   // highlight
   let html='', cur=0;
   for(const e of ents){ if(e.start<cur) continue;
