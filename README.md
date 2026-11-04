@@ -52,10 +52,15 @@ the headline number.
   transitions in any split; no sentence starts with an `I-` tag).
 - **Licensing / attribution:** CoNLL-2003 annotations derive from the Reuters
   RCV1 corpus and are a standard NER research benchmark (Tjong Kim Sang & De
-  Meulder, 2003). The **raw corpus text is not redistributed** in this
-  repository; only a small frozen copy of the token/label parquet (used for
-  reproducibility) and derived statistics are committed. Please consult the
-  original dataset terms for redistribution of the underlying text.
+  Meulder, 2003). The **corpus tokens/sentences are NOT redistributed** in this
+  repository — no Parquet, CSV or raw text is committed, and the full git
+  history is free of Reuters-derived tokens. Only **derived statistics**
+  (`data_audit.json`) and **provenance with SHA-256 checksums**
+  (`dataset_provenance.json`) are committed. Reproducibility is preserved by
+  regenerating the frozen splits locally from the Hugging Face source:
+  `python scripts/prepare_data.py` (the checksums let you verify you obtained the
+  identical splits). Please consult the original dataset terms before
+  redistributing the underlying text.
 
 ### Data audit (reproducible — `data/processed/data_audit.json`)
 
@@ -223,7 +228,8 @@ cd entitylens-ai
 python3.12 -m venv .venv && source .venv/bin/activate
 pip install -r requirements-dev.txt
 
-# 1) dataset + audit (frozen splits already committed under data/processed)
+# 1) download CoNLL-2003 from the HF source + freeze splits locally + audit
+#    (corpus Parquet is NOT committed; this regenerates it under data/processed)
 python scripts/prepare_data.py
 
 # 2) train the recurrent models (local)
@@ -263,7 +269,7 @@ entitylens-ai/
 ├── notebooks/                  # Kaggle BERT fine-tuning notebook
 ├── configs/                    # per-model YAML
 ├── tests/                      # 32 automated tests
-├── data/processed/             # frozen parquet splits + audit/provenance
+├── data/processed/             # audit + provenance JSON only (corpus Parquet gitignored)
 └── results/                    # metrics + figures
 ```
 

@@ -4,9 +4,11 @@ from entitylens.data.rnn_dataset import RNNNerDataset, make_collate
 from entitylens.data.vocab import PAD, UNK, build_vocabularies
 from entitylens.labels import NUM_LABELS, PAD_LABEL_ID
 
+# Synthetic fixtures (not from CoNLL-2003) covering B-ORG, B-MISC, O and a
+# multi-token B-PER/I-PER span.
 EXAMPLES = [
-    {"tokens": ["EU", "rejects", "German", "call"], "ner_tags": [3, 0, 7, 0]},
-    {"tokens": ["Peter", "Blackburn"], "ner_tags": [1, 2]},
+    {"tokens": ["Acme", "hired", "Canadian", "staff"], "ner_tags": [3, 0, 7, 0]},
+    {"tokens": ["Jane", "Doe"], "ner_tags": [1, 2]},
 ]
 
 
@@ -50,4 +52,4 @@ def test_vocab_save_load_roundtrip(tmp_path):
     from entitylens.data.vocab import Vocabularies
     v2 = Vocabularies.load(p)
     assert v2.word.itos == v.word.itos
-    assert v2.encode_word("EU") == v.encode_word("EU")
+    assert v2.encode_word("Acme") == v.encode_word("Acme")
