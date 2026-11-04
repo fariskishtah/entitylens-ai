@@ -1,0 +1,30 @@
+{
+  "source": "tomaarsen/conll2003",
+  "candidates_tried": [
+    "tomaarsen/conll2003",
+    "eriktks/conll2003",
+    "conll2003"
+  ],
+  "splits": {
+    "train": 14041,
+    "validation": 3250,
+    "test": 3453
+  },
+  "labels": [
+    "O",
+    "B-PER",
+    "I-PER",
+    "B-ORG",
+    "I-ORG",
+    "B-LOC",
+    "I-LOC",
+    "B-MISC",
+    "I-MISC"
+  ],
+  "checksums_sha256": {
+    "train": "b0646e8d8cd48789ac75d11f9b3cd86878ad15706ad92c7cea7c83efa376580c",
+    "validation": "dbd0d62969ff9c023569aaf99d9d1cdc4967acdd25616c62485ebf3e9b591d0b",
+    "test": "07d18a7339ddc0f7343bb017935e7d9250c6a9c73f7cad0ce2cc79f6b3d8e9eb"
+  },
+  "note": "CoNLL-2003 English NER. Annotations derive from the Reuters RCV1 corpus; the benchmark is standard for NER research. See README for license/provenance details."
+}

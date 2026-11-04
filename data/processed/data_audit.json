@@ -1,0 +1,133 @@
+{
+  "dataset": "CoNLL-2003 (English NER)",
+  "tagging_scheme": "IOB2 / BIO2 (verified: no sentence starts with I-)",
+  "labels": [
+    "O",
+    "B-PER",
+    "I-PER",
+    "B-ORG",
+    "I-ORG",
+    "B-LOC",
+    "I-LOC",
+    "B-MISC",
+    "I-MISC"
+  ],
+  "per_split": {
+    "train": {
+      "n_sentences": 14041,
+      "n_tokens": 203621,
+      "sentence_length": {
+        "min": 1,
+        "max": 113,
+        "mean": 14.5,
+        "median": 10,
+        "p95": 37
+      },
+      "label_distribution": {
+        "B-LOC": 7140,
+        "B-MISC": 3438,
+        "B-ORG": 6321,
+        "B-PER": 6600,
+        "I-LOC": 1157,
+        "I-MISC": 1155,
+        "I-ORG": 3704,
+        "I-PER": 4528,
+        "O": 169578
+      },
+      "entity_counts": {
+        "PER": 6600,
+        "ORG": 6321,
+        "LOC": 7140,
+        "MISC": 3438
+      },
+      "total_entities": 23499,
+      "invalid_bio_transitions": 0,
+      "invalid_or_misaligned_labels": 0
+    },
+    "validation": {
+      "n_sentences": 3250,
+      "n_tokens": 51362,
+      "sentence_length": {
+        "min": 1,
+        "max": 109,
+        "mean": 15.8,
+        "median": 11,
+        "p95": 39
+      },
+      "label_distribution": {
+        "B-LOC": 1837,
+        "B-MISC": 922,
+        "B-ORG": 1341,
+        "B-PER": 1842,
+        "I-LOC": 257,
+        "I-MISC": 346,
+        "I-ORG": 751,
+        "I-PER": 1307,
+        "O": 42759
+      },
+      "entity_counts": {
+        "PER": 1842,
+        "ORG": 1341,
+        "LOC": 1837,
+        "MISC": 922
+      },
+      "total_entities": 5942,
+      "invalid_bio_transitions": 0,
+      "invalid_or_misaligned_labels": 0
+    },
+    "test": {
+      "n_sentences": 3453,
+      "n_tokens": 46435,
+      "sentence_length": {
+        "min": 1,
+        "max": 124,
+        "mean": 13.45,
+        "median": 9,
+        "p95": 37
+      },
+      "label_distribution": {
+        "B-LOC": 1668,
+        "B-MISC": 702,
+        "B-ORG": 1661,
+        "B-PER": 1617,
+        "I-LOC": 257,
+        "I-MISC": 216,
+        "I-ORG": 835,
+        "I-PER": 1156,
+        "O": 38323
+      },
+      "entity_counts": {
+        "PER": 1617,
+        "ORG": 1661,
+        "LOC": 1668,
+        "MISC": 702
+      },
+      "total_entities": 5648,
+      "invalid_bio_transitions": 0,
+      "invalid_or_misaligned_labels": 0
+    }
+  },
+  "cross_split_oov": {
+    "validation": {
+      "oov_tokens": 3874,
+      "total_tokens": 51362,
+      "oov_rate": 0.0754
+    },
+    "test": {
+      "oov_tokens": 5049,
+      "total_tokens": 46435,
+      "oov_rate": 0.1087
+    }
+  },
+  "duplicated_sentences_within_split": {
+    "train": 1350,
+    "validation": 180,
+    "test": 269
+  },
+  "cross_split_sentence_overlap": {
+    "train_val": 129,
+    "train_test": 78,
+    "val_test": 25
+  },
+  "leakage_flag": true
+}

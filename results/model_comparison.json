@@ -1,0 +1,187 @@
+{
+  "comparison": [
+    {
+      "model": "LSTM",
+      "precision": 0.7856,
+      "recall": 0.7689,
+      "f1": 0.7772,
+      "token_accuracy": 0.9576,
+      "per_type": {
+        "PER": 0.83,
+        "ORG": 0.6903,
+        "LOC": 0.8369,
+        "MISC": 0.6953
+      },
+      "per_type_full": {
+        "PER": {
+          "precision": 0.7771181867242309,
+          "recall": 0.8905380333951762,
+          "f1": 0.829971181556196,
+          "support": 1617
+        },
+        "ORG": {
+          "precision": 0.7491190979563073,
+          "recall": 0.6399759181216135,
+          "f1": 0.6902597402597402,
+          "support": 1661
+        },
+        "LOC": {
+          "precision": 0.8530510585305106,
+          "recall": 0.8213429256594724,
+          "f1": 0.8368967623701893,
+          "support": 1668
+        },
+        "MISC": {
+          "precision": 0.7230769230769231,
+          "recall": 0.6695156695156695,
+          "f1": 0.6952662721893491,
+          "support": 702
+        }
+      },
+      "invalid_bio_rate": 0.008205,
+      "val_f1": 0.8513,
+      "train_time_sec": 1466.4,
+      "params": 2373819,
+      "latency_ms": 1.8,
+      "size_mb": 9.5
+    },
+    {
+      "model": "BiLSTM",
+      "precision": 0.8458,
+      "recall": 0.8421,
+      "f1": 0.8439,
+      "token_accuracy": 0.9697,
+      "per_type": {
+        "PER": 0.878,
+        "ORG": 0.7988,
+        "LOC": 0.8946,
+        "MISC": 0.7523
+      },
+      "per_type_full": {
+        "PER": {
+          "precision": 0.8556338028169014,
+          "recall": 0.9016697588126159,
+          "f1": 0.8780487804878049,
+          "support": 1617
+        },
+        "ORG": {
+          "precision": 0.8116842759477937,
+          "recall": 0.786273329319687,
+          "f1": 0.7987767584097859,
+          "support": 1661
+        },
+        "LOC": {
+          "precision": 0.9174543163201008,
+          "recall": 0.8729016786570744,
+          "f1": 0.8946236559139784,
+          "support": 1668
+        },
+        "MISC": {
+          "precision": 0.7413554633471646,
+          "recall": 0.7635327635327636,
+          "f1": 0.7522807017543859,
+          "support": 702
+        }
+      },
+      "invalid_bio_rate": 0.002692,
+      "val_f1": 0.903,
+      "train_time_sec": 2372.7,
+      "params": 2641219,
+      "latency_ms": 2.47,
+      "size_mb": 10.57
+    },
+    {
+      "model": "BiLSTM+CRF",
+      "precision": 0.8743,
+      "recall": 0.8571,
+      "f1": 0.8656,
+      "token_accuracy": 0.9716,
+      "per_type": {
+        "PER": 0.9125,
+        "ORG": 0.8201,
+        "LOC": 0.9056,
+        "MISC": 0.767
+      },
+      "per_type_full": {
+        "PER": {
+          "precision": 0.8967164179104478,
+          "recall": 0.9288806431663574,
+          "f1": 0.9125151883353585,
+          "support": 1617
+        },
+        "ORG": {
+          "precision": 0.8650634602538411,
+          "recall": 0.7796508127633955,
+          "f1": 0.8201393286890436,
+          "support": 1661
+        },
+        "LOC": {
+          "precision": 0.9175384615384615,
+          "recall": 0.8938848920863309,
+          "f1": 0.9055572426358943,
+          "support": 1668
+        },
+        "MISC": {
+          "precision": 0.7472972972972973,
+          "recall": 0.7877492877492878,
+          "f1": 0.7669902912621359,
+          "support": 702
+        }
+      },
+      "invalid_bio_rate": 0.0,
+      "val_f1": 0.9206,
+      "train_time_sec": 6339.6,
+      "params": 2641318,
+      "latency_ms": 2.64,
+      "size_mb": 10.57
+    },
+    {
+      "model": "Transformer",
+      "precision": 0.9138,
+      "recall": 0.9217,
+      "f1": 0.9178,
+      "token_accuracy": 0.9826,
+      "per_type": {
+        "PER": 0.9628,
+        "ORG": 0.9023,
+        "LOC": 0.9315,
+        "MISC": 0.8195
+      },
+      "per_type_full": {
+        "PER": {
+          "precision": 0.9646182495344506,
+          "recall": 0.961038961038961,
+          "f1": 0.9628252788104089,
+          "support": 1617
+        },
+        "ORG": {
+          "precision": 0.8932153392330383,
+          "recall": 0.9114990969295605,
+          "f1": 0.902264600715137,
+          "support": 1661
+        },
+        "LOC": {
+          "precision": 0.9295522388059702,
+          "recall": 0.9334532374100719,
+          "f1": 0.9314986539036794,
+          "support": 1668
+        },
+        "MISC": {
+          "precision": 0.8114525139664804,
+          "recall": 0.8276353276353277,
+          "f1": 0.8194640338504937,
+          "support": 702
+        }
+      },
+      "invalid_bio_rate": 0.000754,
+      "val_f1": 0.9537,
+      "train_time_sec": 507.6,
+      "params": 107726601,
+      "latency_ms": 25.01,
+      "size_mb": 431.82
+    }
+  ],
+  "selected_model": "Transformer",
+  "selection_reason": "highest entity-level validation F1 (0.9537)",
+  "protocol": "Strict entity-level seqeval (IOB2) on the frozen test split; selection by validation F1, test used only for final report."
+}

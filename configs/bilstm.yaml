@@ -1,0 +1,15 @@
+# Model 2 — bidirectional LSTM
+model: bilstm
+word_emb_dim: 100
+hidden_dim: 200
+num_layers: 1
+dropout: 0.5
+use_char: true
+freeze_emb: false
+batch_size: 32
+lr: 0.001
+weight_decay: 0.00001
+grad_clip: 5.0
+epochs: 40
+early_stop_patience: 6
+sched_patience: 2

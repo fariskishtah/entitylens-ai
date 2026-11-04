@@ -1,0 +1,8 @@
+# Shared data / reproducibility settings for EntityLens AI.
+seed: 42
+processed_dir: data/processed
+raw_dir: data/raw
+glove_dim: 100
+lower: true
+max_word_len: 20
+device: auto          # auto -> cuda | mps | cpu
